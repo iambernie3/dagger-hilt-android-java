@@ -18,7 +18,7 @@ public class AppModule {
     @Singleton
     MyApi provideModuleApi() {
         return new Retrofit.Builder()
-                .baseUrl("https://restcountries.com/v3.1/")
+                .baseUrl("https://restcountries.com")
                 .addConverterFactory(GsonConverterFactory.create())
                 .build()
                 .create(MyApi.class);

@@ -2,6 +2,7 @@ package com.gte.myjavadaggerhilt.presentation;
 
 import android.util.Log;
 
+import androidx.annotation.NonNull;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
@@ -23,7 +24,7 @@ import retrofit2.Response;
 @HiltViewModel
 public class AppViewModel extends ViewModel {
 
-    public MutableLiveData<ApiResponse<ArrayList<CountryDto>>> apiState = new MutableLiveData<ApiResponse<ArrayList<CountryDto>>>();
+    public MutableLiveData<ApiResponse<ArrayList<CountryDto>>> apiState = new MutableLiveData<>();
     private final IApiRepository repository;
 
     @Inject
@@ -35,7 +36,7 @@ public class AppViewModel extends ViewModel {
         Call<ArrayList<CountryDto>>  call = repository.fetchApi();
         call.enqueue(new Callback<ArrayList<CountryDto>>() {
             @Override
-            public void onResponse(Call<ArrayList<CountryDto>> call, Response<ArrayList<CountryDto>> response) {
+            public void onResponse(@NonNull Call<ArrayList<CountryDto>> call, @NonNull Response<ArrayList<CountryDto>> response) {
 
                 if(response.code() == 200) {
                     ArrayList<CountryDto> list = response.body();
@@ -46,7 +47,7 @@ public class AppViewModel extends ViewModel {
             }
 
             @Override
-            public void onFailure(Call<ArrayList<CountryDto>> call, Throwable t) {
+            public void onFailure(@NonNull Call<ArrayList<CountryDto>> call, @NonNull Throwable t) {
                 Log.e("API","response-t:"+t.getMessage());
                 apiState.postValue(new ApiResponse<>(
                         null,ApiEnum.ERROR,t.getMessage())

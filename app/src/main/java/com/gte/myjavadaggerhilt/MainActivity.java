@@ -6,8 +6,11 @@ import androidx.lifecycle.ViewModelProvider;
 import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.gte.myjavadaggerhilt.data.remote.CountryDto;
@@ -18,6 +21,9 @@ import com.gte.myjavadaggerhilt.presentation.SelectRegionBelongToCapital;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
@@ -30,8 +36,9 @@ public class MainActivity extends AppCompatActivity {
     private ActivityMainBinding binding;
     AppViewModel appViewModel;
     private ArrayList<CountryDto> listOfCountry = new ArrayList<>();
-    private final ArrayList<String> capitalies = new ArrayList<>();
+    private ArrayList<String> capitalies = new ArrayList<>();
     private ArrayList<String> regions = new ArrayList<>();
+    private String countryName = "";
 
     @Inject
     SelectRegionBelongToCapital selectRegionBelongToCapital;
@@ -48,23 +55,9 @@ public class MainActivity extends AppCompatActivity {
                 case SUCCESS:
                     listOfCountry.clear();
                     capitalies.clear();
-                    listOfCountry = result.getData();
-                    for(CountryDto dto: listOfCountry) {
-                        if(dto.capital != null) {
-                            capitalies.addAll(dto.capital);
-                        }
-                    }
+                    listOfCountry = ( ArrayList<CountryDto>) result.getData().stream().filter(x -> x.capital != null).collect(Collectors.toList());
 
-
-//                    Log.e("API","Country:"+countryDto.name.common);
-//                    Log.e("API","Region:"+countryDto.region);
-//                    ArrayList<String> capitalies = countryDto.capital;
-//                    for(String capital: capitalies) {
-//                        Log.e("API","Capital:"+capital);
-//                    }
-                    //assert list != null;
-                    //list = (ArrayList<CountryDto>) new CollectionsFilter().filter(x -> x.name.common.equals("Northern Mariana Islands"),list);
-
+                    listOfCountry.forEach( c -> capitalies.addAll(c.capital));
                     prepareCapitalAdapter();
                     break;
                 case ERROR:
@@ -82,23 +75,26 @@ public class MainActivity extends AppCompatActivity {
         binding.autoCompleteCapital.setThreshold(1);
         binding.ivCapitalShow.setOnClickListener(v-> binding.autoCompleteCapital.showDropDown());
         binding.autoCompleteCapital.setOnItemClickListener((parent, view, position, id) -> {
-            ArrayList<CountryDto> list = (ArrayList<CountryDto>)selectRegionBelongToCapital.getData(listOfCountry,capitalies.get(position));
+            String selectedCapital = (String)parent.getItemAtPosition(position);
+            List<CountryDto> list = listOfCountry.stream().filter(x -> x.capital.contains(selectedCapital)).collect(Collectors.toList());
             regions.clear();
-            regions = selectRegionBelongToCapital.toArrayListTypeString(list);
+            list.forEach(x -> regions.add(x.region));
+            countryName = list.get(0).name.common;
             prepareRegionAdapter();
         });
     }
-
 
     private void prepareRegionAdapter(){
         binding.autoCompleteRegion.setText("");
         Collections.sort(regions);
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1,regions);
         adapter.notifyDataSetChanged();
-
         binding.autoCompleteRegion.setAdapter(adapter);
         binding.autoCompleteRegion.setThreshold(1);
         binding.ivRegionShow.setOnClickListener(v-> binding.autoCompleteRegion.showDropDown());
+        binding.autoCompleteRegion.setOnItemClickListener((parent, view, position, id) -> {
+            binding.autoCompleteCountry.setText(countryName);
+        });
 
     }
 }

@@ -6,6 +6,6 @@ import retrofit2.Call;
 import retrofit2.http.GET;
 
 public interface MyApi {
-    @GET("https://restcountries.com/v3.1/all")
+    @GET("/v3.1/all")
     Call<ArrayList<CountryDto>> getList();
 }
